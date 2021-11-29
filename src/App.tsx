@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, {useState, useRef, useCallback, useMemo} from 'react';
 import 'react-widgets/styles.css';
 import { from } from 'rxjs';
 
@@ -8,28 +8,27 @@ import { getMoneySign } from './features/helpers';
 import { AccountsExchangerBlock } from './features/components/AccountsExchangerBlock';
 import {CURRENCIES, RatesProps, RatesResponceProps, APP_ID, DELAY_POLLING, serverURL} from './core';
 import { useInterval } from './features/hooks';
-import Icons from "./features/components/Icons";
+import Icons from './features/components/Icons';
 
 function App() {
-
     const [sellDirection, setSellDirection] = useState(true);
 
     const sellText =(sellDirection ? 'Sell ': 'Buy');
 
-    const fromAccountCurrencyValue = useRef<CURRENCIES>(CURRENCIES.USD);
-    const toAccountCurrencyValue = useRef<CURRENCIES>(CURRENCIES.EUR);
+    const [fromCurrency, setFromCurrency] = useState<CURRENCIES>(CURRENCIES.USD);
+    const [toCurrency, setToCurrency] = useState<CURRENCIES>(CURRENCIES.EUR);
 
     const [fromAccountCurrencyRate, setFromAccountCurrencyRate] = useState<number>(1);
     const [toAccountCurrencyRate, setToAccountCurrencyRate] = useState<number>(0);
 
-    const onCurrencyAccountChange=(value: CURRENCIES, isFrom: boolean, rates: RatesProps|null) => {
+     const onCurrencyAccountChange = (value: CURRENCIES, isFrom: boolean, rates: RatesProps|null) => {
         if(isFrom) {
-            fromAccountCurrencyValue.current = value;
+            setFromCurrency(value);
         } else {
-            toAccountCurrencyValue.current = value;
+            setToCurrency(value);
         }
         if(rates) {
-            const formula = isFrom ? rates[toAccountCurrencyValue.current] / rates[value] : rates[value] / rates[fromAccountCurrencyValue.current];
+            const formula = isFrom ? rates[toCurrency] / rates[value] : rates[value] / rates[fromCurrency];
             setFromAccountCurrencyRate(1);
             setToAccountCurrencyRate(formula);
         }
@@ -37,35 +36,39 @@ function App() {
     const [rates, setRates] = useState<RatesProps|null>(null);
     const error = useRef('');
 
-    const callbackFn = useCallback((result: RatesResponceProps) => {
+    const callbackFn = (result: RatesResponceProps) => {
         setRates(result.rates || null);
         if(result.rates) {
-            if(fromAccountCurrencyRate !== result.rates[fromAccountCurrencyValue.current]) {
-                setFromAccountCurrencyRate(result.rates[fromAccountCurrencyValue.current]);
-                onCurrencyAccountChange(fromAccountCurrencyValue.current, true, result.rates);
+            if(fromAccountCurrencyRate !== result.rates[fromCurrency]) {
+                setFromAccountCurrencyRate(result.rates[fromCurrency]);
+                onCurrencyAccountChange(fromCurrency, true, result.rates);
             }
-            if(toAccountCurrencyRate !== result.rates[toAccountCurrencyValue.current]) {
-                setToAccountCurrencyRate(result.rates[toAccountCurrencyValue.current]);
-                onCurrencyAccountChange(toAccountCurrencyValue.current, false, result.rates);
+            if(toAccountCurrencyRate !== result.rates[toCurrency]) {
+                setToAccountCurrencyRate(result.rates[toCurrency]);
+                onCurrencyAccountChange(toCurrency, false, result.rates);
             }
         }
-    }, []);
+    };
 
     useInterval({
         skipWhileFn: () => error.current.length !== 0,
-        mergeMapFn: (() => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`).then(res =>  res.ok ? res.json() : Promise.reject(res)).then(result => callbackFn(result)).catch((e) => {
-            error.current = (`Server error: ${e.url} ${e.status} ${e.statusText}`);
+        callback: callbackFn,
+        mergeMapFn: ((clb: (data: any) => void) => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`)
+            .then(res =>  res.ok ? res.json() : Promise.reject(res))
+            .then(result => clb(result))
+            .catch((e) => {
+                error.current = (`Server error: ${e.url} ${e.status} ${e.statusText}`);
         }))),
         delayInterval: DELAY_POLLING,
     });
 
-    const onAccChange = (value: any, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates);
+    const onAccChange = ((value: any, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
 
     return (
         <div className="App">
             <div className={'Exchange'}>
                 <div className={'ExchangeBody'}>
-                    <h3>{`${sellText} ${fromAccountCurrencyValue.current}`}</h3>
+                    <h3>{`${sellText} ${fromCurrency}`}</h3>
                     <p>
                         <img
                             src={Icons.money}
@@ -74,29 +77,28 @@ function App() {
                         />
                         <img
                             style={{width: '24px', position:'relative', top: '6px'} }
-                            alt={fromAccountCurrencyValue.current}
-                            src={getMoneySign(fromAccountCurrencyValue.current)}
+                            alt={fromCurrency}
+                            src={getMoneySign(fromCurrency)}
                         />
                         {fromAccountCurrencyRate + ' = ' }
                         <img
-                            alt={toAccountCurrencyValue.current}
+                            alt={toCurrency}
                             style={{width: '24px', position:'relative', top: '6px'}}
-                            src={getMoneySign(toAccountCurrencyValue.current)}
+                            src={getMoneySign(toCurrency)}
                         />
                         {toAccountCurrencyRate}
                     </p>
 
                     <AccountsExchangerBlock
                         rates={rates}
-                        fromAccountCurrencyValue={fromAccountCurrencyValue}
-                        toAccountCurrencyValue={toAccountCurrencyValue}
+                        fromAccountCurrencyValue={fromCurrency}
+                        toAccountCurrencyValue={toCurrency}
                         sellDirection={sellDirection}
                         setSellDirection={setSellDirection}
                         toAccountCurrencyRate={toAccountCurrencyRate}
                         onAccountChange={onAccChange}
                         error={error}
                     />
-
                 </div>
             </div>
         </div>

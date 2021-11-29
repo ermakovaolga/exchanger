@@ -32,15 +32,16 @@ export  const AccountMoneyInput = (
 
     useEffect(() => {
         const current = Number(inputMoneyValue);
-        if(current > 0) {
+        if(current >= 0) {
             setValid?.(true);
         } else {
-            setValid?.(current!==0 && balanceValue > (-1*current));
+            setValid?.(current!== 0 && balanceValue > (-1*current));
         }
 
     }, [inputMoneyValue, balanceValue]);
 
     useEffect(() => {
+        debugger
         const selectedAccount = accounts.find(item => item.currency === value);
         if (selectedAccount) {
             setAccountCount?.(selectedAccount.balance);
@@ -61,7 +62,7 @@ export  const AccountMoneyInput = (
                 </select>*/}
                 <Combobox
                     className={"ExchangeCombobox"}
-                    onChange={(val: any) => onCurrencyChange?.(val, false, rates)}
+                    onChange={(val: any) => onCurrencyChange?.(val.currency, false, rates)}
                     data={accounts}
                     dataKey='id'
                     value={value}
@@ -69,9 +70,13 @@ export  const AccountMoneyInput = (
                 />
                 <input
                     className={'ExchangeBlockText'}
-                    style={{color: valid ? TEXT_COLOR: TEXT_ERROR_COLOR}} type={'text'} value={inputMoneyValue} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    onInputMoneyChange?.(e.target.value)
-                }}/>
+                    style={{color: valid ? TEXT_COLOR: TEXT_ERROR_COLOR}}
+                    type={'text'}
+                    value={inputMoneyValue}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        e.stopPropagation();
+                        onInputMoneyChange?.(e.target.value);
+                    }}/>
             </div>
             <div className={"BalanceText"} data-testid={'balanceValue'}>
                 {`Balance: ${balanceValue.toFixed(2)}`}

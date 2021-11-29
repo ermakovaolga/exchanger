@@ -1,22 +1,31 @@
-import { useEffect } from 'react';
-import { delay, mergeMap, repeat, skipWhile, tap } from 'rxjs/operators';
-import { noop, Observable, of } from 'rxjs';
+import {useEffect, useRef} from 'react';
+import { delay, mergeMap, repeat, skipWhile } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
-export function useInterval<ValueType = any>(
+export function useInterval(
     {
       skipWhileFn,
       mergeMapFn,
       delayInterval,
+      callback,
 }: {
       skipWhileFn?: () => boolean;
-      mergeMapFn: () => Observable<any>;
+      mergeMapFn: (clb: (data: any) => void) => Observable<any>;
       delayInterval: number | Date;
+      callback: (data: any) => void;
     }) {
-  useEffect(() => {
+    const savedCallback = useRef((data: any) => {});
+
+    useEffect(() => {
+        savedCallback.current = callback;
+    }, [callback]);
+
+
+    useEffect(() => {
     const pollingSubscription = of({})
       .pipe(
         skipWhile(skipWhileFn ?? (() => false)),
-        mergeMap(mergeMapFn),
+        mergeMap(() => mergeMapFn(savedCallback.current)),
         delay(delayInterval),
         repeat(),
       )

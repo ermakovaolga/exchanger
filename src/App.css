@@ -103,6 +103,8 @@ button.ExchangeSubmit:disabled{
   padding-left: 0;
 }
 .SubmitNotification {
+  text-align: left;
+  padding: 0 5px;
   height: 140px;
   width: 100%;
   font-size:  calc(10px + 1vmin);
@@ -114,4 +116,12 @@ select {
   border: 0;
   font-size: calc(10px + 2vmin);
   outline: none !important;
+}
+.ExchangeBlockTextError {
+  color: #282c34;
+  font-size: calc(10px + 2vmin);
+  height: 35px;
+  text-align: right;
+  width: 100%;
+  border: 1px solid #d62424;
 }
