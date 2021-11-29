@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import Combobox from "react-widgets/Combobox";
 
 import {AccountProps, CURRENCIES, RatesProps, TEXT_COLOR, TEXT_ERROR_COLOR} from '../../core';
@@ -14,7 +14,9 @@ export  const AccountMoneyInput = (
         valid,
         setAccountCount,
         setValid,
-        accounts
+        accounts,
+        inputFromError,
+        inputToError
     }: {
         rates: RatesProps|null,
         value:  CURRENCIES,
@@ -26,17 +28,19 @@ export  const AccountMoneyInput = (
         setAccountCount?: React.Dispatch<React.SetStateAction<number>>;
         setValid?: React.Dispatch<React.SetStateAction<boolean>>;
         accounts: AccountProps[];
-
+        inputFromError?:string;
+        inputToError?:string;
     }) => {
 
 
     useEffect(() => {
         const current = Number(inputMoneyValue);
-        if(current >= 0) {
+        if(current > 0) {
             setValid?.(true);
         } else {
             setValid?.(current!== 0 && balanceValue > (-1*current));
         }
+
 
     }, [inputMoneyValue, balanceValue]);
 
@@ -69,17 +73,27 @@ export  const AccountMoneyInput = (
                 />
                 <input
                     className={'ExchangeBlockText'}
-                    style={{color: valid ? TEXT_COLOR: TEXT_ERROR_COLOR}}
+                    style={{color: valid ? TEXT_COLOR: (inputMoneyValue === '0' ? TEXT_COLOR : TEXT_ERROR_COLOR)}}
                     type={'text'}
                     value={inputMoneyValue}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        e.stopPropagation();
                         onInputMoneyChange?.(e.target.value);
                     }}/>
-            </div>
+            </div> <div  style={{display: 'flex'}}>
             <div className={"BalanceText"} data-testid={'balanceValue'}>
                 {`Balance: ${balanceValue.toFixed(2)}`}
             </div>
+            {inputFromError &&
+            <div className={"ErrorNotification"}>
+                {inputFromError}
+            </div>}
+            {inputToError &&
+            <div className={"ErrorNotification"}>
+                {inputToError}
+            </div>}
+        </div>
+
+
         </div>
     );
 }

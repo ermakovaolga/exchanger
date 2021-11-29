@@ -38,6 +38,9 @@ export const AccountsExchangerBlock = (
 
     const [toAccountCount, setToAccountCount] = useState<number>(0);
 
+    const [inputFromError, setInputFromError] = useState<string>('');
+    const [inputToError, setInputToError] = useState<string>('');
+
     const onSubmit = (fromAccountCount: number, fromMoneyInput: number) => {
         const newFromBalance = (sellDirection ? fromAccountCount-fromMoneyInput : fromAccountCount+fromMoneyInput);
         setFromAccountCount(newFromBalance);
@@ -56,11 +59,12 @@ export const AccountsExchangerBlock = (
         setFromMoneyInput(0);
     };
 
-    const onInputChange = (value: string, callback: (val: number, toAccountRate: number) => void) => {
-
-        setNotification('');
+    const onInputChange = (value: string, isFrom: boolean, callback: (val: number, toAccountRate: number) => void) => {
+        setInputFromError('');
+        setInputToError('');
         if(isNaN(Number(value))) {
-            setNotification('First account shoud be number');
+            const msg = 'The input should be number';
+            isFrom ? setInputFromError(msg) : setInputToError(msg);
         } else {
             const val = Number(value) < 0 ? (Number(value) * -1) : Number(value);
             callback(val, toAccountCurrencyRate);
@@ -68,14 +72,14 @@ export const AccountsExchangerBlock = (
     };
 
     const onFromInputChange = (value: string) => {
-        onInputChange(value, (val, toAccountRate) => {
+        onInputChange(value, true,(val, toAccountRate) => {
             setFromMoneyInput(val);
             setToMoneyInput(val * toAccountRate);
         });
     };
 
     const onToInputChange = (value: string) => {
-        onInputChange(value, (val, toAccountRate) => {
+        onInputChange(value, false,(val, toAccountRate) => {
             setToMoneyInput(val);
             setFromMoneyInput(toAccountCurrencyRate ? val/toAccountCurrencyRate : toAccountCurrencyRate);
         });
@@ -103,6 +107,7 @@ export const AccountsExchangerBlock = (
                 onInputMoneyChange={onFromInputChange}
                 setValid={setValidFrom}
                 setAccountCount={setFromAccountCount}
+                inputFromError={inputFromError}
             />
             <div>
                 <img
@@ -123,6 +128,7 @@ export const AccountsExchangerBlock = (
                 inputMoneyValue={toMoneyInput === 0 ? '0' : (sellDirection ? '+' : '-') + toMoneyInput.toFixed(2)}
                 onInputMoneyChange={onToInputChange}
                 setAccountCount={setToAccountCount}
+                inputToError={inputToError}
             />
             <div className={"SubmitNotification"} data-testid={'notificationBlock'}>
                 {notification}
