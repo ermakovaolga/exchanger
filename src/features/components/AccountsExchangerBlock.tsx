@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState} from 'react';
 
 import { AccountMoneyInput } from './AccountMoneyInput';
-import {AccountProps, CURRENCIES, RatesProps, ACCOUNTS_INIT_VALUE} from '../../core';
+import { AccountProps, CURRENCIES, RatesProps, ACCOUNTS_INIT_VALUE } from '../../core';
 import Icons from './Icons';
 
 export const AccountsExchangerBlock = (
@@ -17,12 +17,12 @@ export const AccountsExchangerBlock = (
     }: {
         sellDirection: boolean;
         setSellDirection?: React.Dispatch<React.SetStateAction<boolean>>;
-        fromAccountCurrencyValue: React.MutableRefObject<CURRENCIES>;
-        toAccountCurrencyValue: React.MutableRefObject<CURRENCIES>;
+        fromAccountCurrencyValue: CURRENCIES,
+        toAccountCurrencyValue: CURRENCIES;
         toAccountCurrencyRate: number;
         rates: RatesProps|null;
         onAccountChange?: (value: string, idFrom: boolean) => void;
-        error: React.MutableRefObject<string>;
+        error: string;
     }
 ) => {
 
@@ -39,25 +39,47 @@ export const AccountsExchangerBlock = (
     const [toAccountCount, setToAccountCount] = useState<number>(0);
 
     const onSubmit = (fromAccountCount: number, fromMoneyInput: number) => {
-        setTimeout(()=>{
-            setNotification('');
-        }, 10000);
-        setNotification(`I will send request which will update balance ${fromAccountCount} 
-        on ${sellDirection ? fromAccountCount-fromMoneyInput : fromAccountCount+fromMoneyInput}
-         and ${toAccountCount} on ${sellDirection ? toAccountCount+toMoneyInput : toAccountCount-toMoneyInput} and then clean fields`)
+        const newFromBalance = (sellDirection ? fromAccountCount-fromMoneyInput : fromAccountCount+fromMoneyInput);
+        setFromAccountCount(newFromBalance);
+        const selectedAccount = accounts.find(item => item.currency === fromAccountCurrencyValue);
+        if (selectedAccount) {
+            selectedAccount.balance = newFromBalance;
+        }
+        const newToBalance = (sellDirection ? toAccountCount+toMoneyInput : toAccountCount-toMoneyInput);
+        setFromAccountCount(newToBalance);
+        const selectedToAccount = accounts.find(item => item.currency === toAccountCurrencyValue);
+        if (selectedToAccount) {
+            selectedToAccount.balance = newToBalance;
+        }
+        setToAccountCount(newToBalance);
+        setToMoneyInput(0);
+        setFromMoneyInput(0);
+    };
+
+    const onInputChange = (value: string, callback: (val: number, toAccountRate: number) => void) => {
+
+        setNotification('');
+        if(isNaN(Number(value))) {
+            setNotification('First account shoud be number');
+        } else {
+            const val = Number(value) < 0 ? (Number(value) * -1) : Number(value);
+            callback(val, toAccountCurrencyRate);
+        }
     };
 
     const onFromInputChange = (value: string) => {
-        const val = Number(value) < 0 ? (Number(value) *-1) : Number(value);
-        setFromMoneyInput(val);
-        setToMoneyInput(val*toAccountCurrencyRate);
+        onInputChange(value, (val, toAccountRate) => {
+            setFromMoneyInput(val);
+            setToMoneyInput(val * toAccountRate);
+        });
     };
 
     const onToInputChange = (value: string) => {
-        const val = Number(value) < 0 ? (Number(value) *-1) : Number(value);
-        setToMoneyInput(val);
-        setFromMoneyInput(toAccountCurrencyRate ? val/toAccountCurrencyRate : toAccountCurrencyRate);
-    }
+        onInputChange(value, (val, toAccountRate) => {
+            setToMoneyInput(val);
+            setFromMoneyInput(toAccountCurrencyRate ? val/toAccountCurrencyRate : toAccountCurrencyRate);
+        });
+    };
     const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
 
     useEffect(() => {
@@ -65,18 +87,19 @@ export const AccountsExchangerBlock = (
     }, [toAccountCurrencyRate]);
 
     useEffect(() => {
-        setNotification(error.current);
-    }, [error.current]);
+        setNotification(error);
+    }, [error]);
+
     return (
         <div>
             <AccountMoneyInput
-                accounts={ accounts.filter((acc) => acc.currency !== toAccountCurrencyValue.current) }
+                accounts={ accounts.filter((acc) => acc.currency !== toAccountCurrencyValue) }
                 rates={rates}
-                value={fromAccountCurrencyValue.current}
+                value={fromAccountCurrencyValue}
                 onCurrencyChange={(v) => onAccountChange?.(v, true)}
                 balanceValue={fromAccountCount}
                 valid={validFrom}
-                inputMoneyValue={(sellDirection ? '-' : '+') + fromMoneyInput.toFixed(2)}
+                inputMoneyValue={fromMoneyInput === 0 ? '0' : (sellDirection ? '-' : '+') + fromMoneyInput.toFixed(2)}
                 onInputMoneyChange={onFromInputChange}
                 setValid={setValidFrom}
                 setAccountCount={setFromAccountCount}
@@ -90,14 +113,14 @@ export const AccountsExchangerBlock = (
                 />
             </div>
             <AccountMoneyInput
-                accounts={ accounts.filter((acc) => acc.currency !== fromAccountCurrencyValue.current)}
+                accounts={ accounts.filter((acc) => acc.currency !== fromAccountCurrencyValue)}
                 setValid={setValidTo}
                 rates={rates}
                 valid={validTo}
-                value={toAccountCurrencyValue.current}
+                value={toAccountCurrencyValue}
                 onCurrencyChange={(v) => onAccountChange?.(v, false)}
                 balanceValue={toAccountCount}
-                inputMoneyValue={(sellDirection ? '+' : '-') + toMoneyInput.toFixed(2)}
+                inputMoneyValue={toMoneyInput === 0 ? '0' : (sellDirection ? '+' : '-') + toMoneyInput.toFixed(2)}
                 onInputMoneyChange={onToInputChange}
                 setAccountCount={setToAccountCount}
             />
@@ -106,7 +129,7 @@ export const AccountsExchangerBlock = (
             </div>
             <div>
                 <button disabled={!validTo || !validFrom} className={'ExchangeSubmit'} onClick={() => onSubmit(fromAccountCount, fromMoneyInput)}>
-                    {`${sellDirection ? 'Sell ': 'Buy'} ${fromAccountCurrencyValue.current} for ${toAccountCurrencyValue.current}`}
+                    {`${sellDirection ? 'Sell ': 'Buy'} ${fromAccountCurrencyValue} for ${toAccountCurrencyValue}`}
                 </button>
             </div>
         </div>
