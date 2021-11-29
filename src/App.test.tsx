@@ -47,7 +47,6 @@ describe('test App', () => {
         valid={true}
         inputMoneyValue={'-10'}
     />);
-    screen.debug();
 
     const combobox = screen.getByRole('combobox');
     expect(combobox).toBeInTheDocument();
