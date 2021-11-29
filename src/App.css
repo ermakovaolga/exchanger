@@ -93,7 +93,8 @@ button.ExchangeSubmit:disabled{
 .BalanceText {
   font-size:  calc(10px + 1vmin);
   padding: 0;
-  width: 335px;
+  width: 60%;
+  white-space: nowrap;
 }
 .ExchangeBody{
   height: 80%;
@@ -112,6 +113,11 @@ button.ExchangeSubmit:disabled{
   font-size:  calc(10px + 1vmin);
   color: #d62424;
   display: flex;
+}
+.ErrorNotification{
+  font-size: calc(8px + 1vmin);
+  white-space: nowrap;
+  width: auto;
 }
 select {
   color: #282c34;
