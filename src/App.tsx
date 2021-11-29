@@ -34,7 +34,7 @@ function App() {
         }
     };
     const [rates, setRates] = useState<RatesProps|null>(null);
-    const error = useRef('');
+    const [error, setError] = useState('');
 
     const callbackFn = (result: RatesResponceProps) => {
         setRates(result.rates || null);
@@ -51,13 +51,15 @@ function App() {
     };
 
     useInterval({
-        skipWhileFn: () => error.current.length !== 0,
+        skipWhileFn: () => error.length !== 0,
         callback: callbackFn,
         mergeMapFn: ((clb: (data: any) => void) => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`)
-            .then(res =>  res.ok ? res.json() : Promise.reject(res))
+            .then(res =>  {
+                return res.ok ? res.json() : Promise.reject(res);
+            })
             .then(result => clb(result))
             .catch((e) => {
-                error.current = (`Server error: ${e.url} ${e.status} ${e.statusText}`);
+                setError(`Server error: ${e.url} ${e.status} ${e.statusText}`);
         }))),
         delayInterval: DELAY_POLLING,
     });

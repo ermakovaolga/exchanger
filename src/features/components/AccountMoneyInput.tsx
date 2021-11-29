@@ -41,7 +41,6 @@ export  const AccountMoneyInput = (
     }, [inputMoneyValue, balanceValue]);
 
     useEffect(() => {
-        debugger
         const selectedAccount = accounts.find(item => item.currency === value);
         if (selectedAccount) {
             setAccountCount?.(selectedAccount.balance);

@@ -22,7 +22,7 @@ export const AccountsExchangerBlock = (
         toAccountCurrencyRate: number;
         rates: RatesProps|null;
         onAccountChange?: (value: string, idFrom: boolean) => void;
-        error: React.MutableRefObject<string>;
+        error: string;
     }
 ) => {
 
@@ -87,8 +87,8 @@ export const AccountsExchangerBlock = (
     }, [toAccountCurrencyRate]);
 
     useEffect(() => {
-        setNotification(error.current);
-    }, [error.current]);
+        setNotification(error);
+    }, [error]);
 
     return (
         <div>
