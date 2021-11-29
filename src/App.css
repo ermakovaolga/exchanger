@@ -93,6 +93,7 @@ button.ExchangeSubmit:disabled{
 .BalanceText {
   font-size:  calc(10px + 1vmin);
   padding: 0;
+  width: 335px;
 }
 .ExchangeBody{
   height: 80%;
@@ -102,7 +103,8 @@ button.ExchangeSubmit:disabled{
   text-align: left;
   padding-left: 0;
 }
-.SubmitNotification {
+.SubmitNotification,
+.ErrorNotification {
   text-align: left;
   padding: 0 5px;
   height: 140px;

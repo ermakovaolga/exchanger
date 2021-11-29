@@ -12,8 +12,8 @@ describe('test App', () => {
     render(<App/>);
     const linkElement = screen.getByText('Sell USD for EUR');
 
-    expect(linkElement).toBeInTheDocument();
-    expect(linkElement).toBeDisabled();
+    await expect(linkElement).toBeInTheDocument();
+    await expect(linkElement).toBeDisabled();
     await userEvent.click(screen.getByAltText('Down'));
     const message = await screen.getByText('Buy USD for EUR');
 
@@ -67,9 +67,9 @@ describe('test App', () => {
     const comboboxes = screen.getAllByRole('combobox');
     expect(comboboxes).toHaveLength(2);
 
-    const input = screen.getByDisplayValue('-0.00');
-    expect(input).toBeInTheDocument();
-    const inputTo = screen.getByDisplayValue('+0.00');
+    const input = screen.getAllByDisplayValue('0');
+    expect(input[0]).toBeInTheDocument();
+    const inputTo = input[1];
     expect(inputTo).toBeInTheDocument();
 
     const balanceTexts = screen.getAllByTestId('balanceValue');
