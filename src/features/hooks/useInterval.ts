@@ -4,15 +4,17 @@ import { Observable, of } from 'rxjs';
 
 export function useInterval(
     {
-      skipWhileFn,
-      mergeMapFn,
-      delayInterval,
-      callback,
-}: {
-      skipWhileFn?: () => boolean;
-      mergeMapFn: (clb: (data: any) => void) => Observable<any>;
-      delayInterval: number | Date;
-      callback: (data: any) => void;
+        error,
+        skipWhileFn,
+        mergeMapFn,
+        delayInterval,
+        callback,
+    }: {
+        error: string,
+        skipWhileFn: (err: string) => boolean;
+        mergeMapFn: (clb: (data: any) => void) => Observable<any>;
+        delayInterval: number | Date;
+        callback: (data: any) => void;
     }) {
     const savedCallback = useRef((data: any) => {});
 
@@ -20,14 +22,20 @@ export function useInterval(
         savedCallback.current = callback;
     }, [callback]);
 
+    const savedError = useRef('');
+    useEffect(() => {
+
+        savedError.current = error;
+    }, [error]);
+
 
     useEffect(() => {
     const pollingSubscription = of({})
       .pipe(
-        skipWhile(skipWhileFn ?? (() => false)),
-        mergeMap(() => mergeMapFn(savedCallback.current)),
-        delay(delayInterval),
-        repeat(),
+          skipWhile( () => skipWhileFn(savedError.current)),
+          mergeMap(() => mergeMapFn(savedCallback.current)),
+          delay(delayInterval),
+          repeat(),
       )
       .subscribe();
     return () => pollingSubscription.unsubscribe();

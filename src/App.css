@@ -40,13 +40,16 @@
   text-align: start;
   margin: 0;
 }
-
+.ExchangeBlock * {
+  border: 0;
+  outline: none !important;
+}
 .ExchangeBlockText {
   color: #282c34;
   font-size: calc(10px + 2vmin);
   height: 35px;
   text-align: right;
-  width: 100%;
+  width: 80%;
   border: 0;
 }
 .ExchangeBlockText:focus,
@@ -67,29 +70,7 @@ button.ExchangeSubmit{
 button.ExchangeSubmit:disabled{
   opacity: 0.3;
 }
-.rw-state-focus .rw-widget-picker{
-  border: 0;
-  box-shadow: none;
-}
-.rw-widget-picker {
-  display: table;
-  overflow: hidden;
-  min-height: 38px;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 0;
-  width: 80%;
-  box-shadow: none;
-}
-.rw-input-addon, .rw-input-addon.rw-picker-btn {
-  border-left: 0;
-}
-.rw-widget-input, .rw-widget-input:focus{
-  border: 0;
-  box-shadow: none;
-  width: 65%;
-  padding: 0;
-}
+
 .BalanceText {
   font-size:  calc(10px + 1vmin);
   padding: 0;
@@ -99,22 +80,18 @@ button.ExchangeSubmit:disabled{
 .ExchangeBody{
   height: 80%;
 }
-.rw-popup-container {
-  width: 95%;
-  text-align: left;
-  padding-left: 0;
-}
 .SubmitNotification,
 .ErrorNotification {
   text-align: left;
-  padding: 0 5px;
-  height: 140px;
+  padding: 25px 5px;
+  height: 100px;
   width: 100%;
-  font-size:  calc(10px + 1vmin);
+  font-size: calc(8px + 1vmin);
   color: #d62424;
   display: flex;
 }
 .ErrorNotification{
+  padding: 0;
   font-size: calc(8px + 1vmin);
   white-space: nowrap;
   width: auto;
@@ -132,4 +109,7 @@ select {
   text-align: right;
   width: 100%;
   border: 1px solid #d62424;
+}
+.ExchangeCombobox {
+  width: auto;
 }
