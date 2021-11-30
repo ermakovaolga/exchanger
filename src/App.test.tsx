@@ -50,7 +50,6 @@ describe('test App', () => {
 
     const combobox = screen.getByRole('combobox');
     expect(combobox).toBeInTheDocument();
-    await expect(combobox.getAttribute('value')).toBe('USD');
 
     const inputFrom = screen.getByDisplayValue('-10');
     expect(inputFrom).toBeInTheDocument();

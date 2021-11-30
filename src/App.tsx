@@ -6,7 +6,16 @@ import './App.css';
 
 import { getMoneySign } from './features/helpers';
 import { AccountsExchangerBlock } from './features/components/AccountsExchangerBlock';
-import {CURRENCIES, RatesProps, RatesResponceProps, APP_ID, DELAY_POLLING, serverURL} from './core';
+import {
+    CURRENCIES,
+    RatesProps,
+    RatesResponceProps,
+    APP_ID,
+    DELAY_POLLING,
+    serverURL,
+    AccountProps,
+    ACCOUNTS_INIT_VALUE
+} from './core';
 import { useInterval } from './features/hooks';
 import Icons from './features/components/Icons';
 
@@ -22,12 +31,12 @@ function App() {
     const [toAccountCurrencyRate, setToAccountCurrencyRate] = useState<number>(0);
 
      const onCurrencyAccountChange = (value: CURRENCIES, isFrom: boolean, rates: RatesProps|null) => {
-        if(isFrom) {
-            setFromCurrency(value);
-        } else {
-            setToCurrency(value);
-        }
         if(rates) {
+            if(isFrom) {
+                setFromCurrency(value);
+            } else {
+                setToCurrency(value);
+            }
             const formula = isFrom ? rates[toCurrency] / rates[value] : rates[value] / rates[fromCurrency];
             setFromAccountCurrencyRate(1);
             setToAccountCurrencyRate(formula);
@@ -35,8 +44,11 @@ function App() {
     };
     const [rates, setRates] = useState<RatesProps|null>(null);
     const [error, setError] = useState('');
+    const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
+
 
     const callbackFn = (result: RatesResponceProps) => {
+        setError('');
         setRates(result.rates || null);
         if(result.rates) {
             if(fromAccountCurrencyRate !== result.rates[fromCurrency]) {
@@ -44,14 +56,15 @@ function App() {
                 onCurrencyAccountChange(fromCurrency, true, result.rates);
             }
             if(toAccountCurrencyRate !== result.rates[toCurrency]) {
-                setToAccountCurrencyRate(result.rates[toCurrency]);
+               // setToAccountCurrencyRate(result.rates[toCurrency]);
                 onCurrencyAccountChange(toCurrency, false, result.rates);
             }
         }
     };
 
     useInterval({
-        skipWhileFn: () => error.length !== 0,
+        error: error,
+        skipWhileFn: (err) => err.length !== 0,
         callback: callbackFn,
         mergeMapFn: ((clb: (data: any) => void) => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`)
             .then(res =>  {
@@ -74,25 +87,26 @@ function App() {
                     <p>
                         <img
                             src={Icons.money}
-                            style={{width: '16px'}}
+                            style={{width: '16px', marginRight: '8px'}}
                             alt={'Money'}
                         />
                         <img
-                            style={{width: '24px', position:'relative', top: '6px'} }
+                            style={{width: '16px', position:'relative', top: '1px', margin: '0 2px 0 4px'} }
                             alt={fromCurrency}
                             src={getMoneySign(fromCurrency)}
                         />
-                        {fromAccountCurrencyRate + ' = ' }
+                        {fromAccountCurrencyRate === 0 ? fromAccountCurrencyRate : fromAccountCurrencyRate.toFixed(2) + ' = ' }
                         <img
                             alt={toCurrency}
-                            style={{width: '24px', position:'relative', top: '6px'}}
+                            style={{width: '16px', position:'relative', top: '1px', margin: '0 2px 0 4px'}}
                             src={getMoneySign(toCurrency)}
                         />
-                        {toAccountCurrencyRate}
+                        {toAccountCurrencyRate.toFixed(2)}
                     </p>
 
                     <AccountsExchangerBlock
                         rates={rates}
+                        accounts={accounts}
                         fromAccountCurrencyValue={fromCurrency}
                         toAccountCurrencyValue={toCurrency}
                         sellDirection={sellDirection}
