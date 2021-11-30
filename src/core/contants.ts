@@ -3,6 +3,7 @@ import {CURRENCIES} from "./types";
 export const APP_ID = '069d3ff9a0fa422a9449ec04df281670';//'895106d24113470ca04f7db578020f42';//'542fc0052ef44b9b931071b5789aa5c2';
 export const serverURL = 'https://openexchangerates.org/api';///latest.json
 export const DELAY_POLLING = 10000;
+export const DELAY_SUCCESS = 5000;
 
 export const ACCOUNTS_INIT_VALUE = [
     {id:'1', currency: CURRENCIES.USD, balance: 1000.07},

@@ -1,7 +1,7 @@
 import React, { useEffect, useState} from 'react';
 
 import { AccountMoneyInput } from './AccountMoneyInput';
-import { AccountProps, CURRENCIES, RatesProps, ACCOUNTS_INIT_VALUE } from '../../core';
+import {AccountProps, CURRENCIES, RatesProps, ACCOUNTS_INIT_VALUE, DELAY_SUCCESS} from '../../core';
 import Icons from './Icons';
 
 export const AccountsExchangerBlock = (
@@ -46,6 +46,10 @@ export const AccountsExchangerBlock = (
     const onSubmit = (fromAccountCount: number, fromMoneyInput: number) => {
         const newFromBalance = (sellDirection ? fromAccountCount-fromMoneyInput : fromAccountCount+fromMoneyInput);
         setFromAccountCount(newFromBalance);
+        setTimeout(() => {
+            setNotification('');
+        }, DELAY_SUCCESS);
+        setNotification(`${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? fromAccountCurrencyValue : toAccountCurrencyValue} were succesfully exchanged`)
         const selectedAccount = accounts.find(item => item.currency === fromAccountCurrencyValue);
         if (selectedAccount) {
             selectedAccount.balance = newFromBalance;
@@ -57,8 +61,8 @@ export const AccountsExchangerBlock = (
             selectedToAccount.balance = newToBalance;
         }
         setToAccountCount(newToBalance);
-        setToMoneyInput('0');
-        setFromMoneyInput('0');
+        setToMoneyInput('');
+        setFromMoneyInput('');
     };
 
     const onInputChange = (value: string, isFrom: boolean, callback: (val: string, toAccountRate: number) => void) => {
