@@ -41,7 +41,7 @@ export  const AccountMoneyInput = (
         if(current > 0) {
             setValid?.(true);
         } else {
-            setValid?.(current === 0 || balanceValue > (-1*current));
+            setValid?.(current !== 0 && balanceValue > (-1*current));
         }
 
     }, [inputMoneyValue, balanceValue]);
