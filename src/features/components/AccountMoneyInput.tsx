@@ -61,7 +61,7 @@ export  const AccountMoneyInput = (
 
     return (
         <div className={"ExchangeBlock"}>
-            <div  style={{display: 'flex'}}>
+            <div  style={{display: 'flex', marginBottom: '4px'}}>
                 <select
                     value={value}
                     onChange={(event:ChangeEvent<HTMLSelectElement>) => onCurrencyChange?.(event.target.value, false, rates)}>
@@ -69,6 +69,7 @@ export  const AccountMoneyInput = (
                 </select>
 
                 <input
+                    placeholder={'0'}
                     className={'ExchangeBlockText'}
                     style={{color: valid ? TEXT_COLOR: (inputMoneyValue === '0' ? TEXT_COLOR : TEXT_ERROR_COLOR)}}
                     type={'text'}

@@ -33,8 +33,8 @@ export const AccountsExchangerBlock = (
     const [validFrom, setValidFrom] = useState<boolean>(true);
     const [validTo, setValidTo] = useState<boolean>(false);
 
-    const [fromMoneyInput, setFromMoneyInput] = useState<string|number>(0);
-    const [toMoneyInput, setToMoneyInput] = useState<string|number>(0);
+    const [fromMoneyInput, setFromMoneyInput] = useState<string>('');
+    const [toMoneyInput, setToMoneyInput] = useState<string>('');
 
     const [fromAccountCount, setFromAccountCount] = useState<number>(0);
 
@@ -95,7 +95,7 @@ export const AccountsExchangerBlock = (
     const onFromInputChange = (value: string) => {
         onInputChange(value, true,(val, toAccountRate) => {
             setFromMoneyInput(val);
-            setToMoneyInput(Number((Number(val) * toAccountRate).toFixed(2)));
+            setToMoneyInput(((Number(val) * toAccountRate).toFixed(2)));
         });
     };
 
@@ -108,13 +108,13 @@ export const AccountsExchangerBlock = (
 
     const onFromMoneyBlur = (value: string) => {
         if(value.indexOf('.') >=0 && value.indexOf('.') === value.length-1) {
-            setFromMoneyInput(Number(value));
+            setFromMoneyInput((value));
         }
     }
 
     const onToMoneyBlur = (value: string) => {
         if(value.indexOf('.') >=0 && value.indexOf('.') === value.length-1) {
-            setToMoneyInput(Number(value) < 0 ? Number(value) * -1 : Number(value));
+            setToMoneyInput((Number(value) < 0 ? Number(value) * -1 : Number(value)).toString());
         }
     }
 
