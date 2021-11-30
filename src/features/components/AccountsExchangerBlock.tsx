@@ -49,7 +49,7 @@ export const AccountsExchangerBlock = (
         setTimeout(() => {
             setNotification('');
         }, DELAY_SUCCESS);
-        setNotification(`${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? fromAccountCurrencyValue : toAccountCurrencyValue} were succesfully exchanged`)
+        setNotification(`${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? fromAccountCurrencyValue : toAccountCurrencyValue} was succesfully exchanged`)
         const selectedAccount = accounts.find(item => item.currency === fromAccountCurrencyValue);
         if (selectedAccount) {
             selectedAccount.balance = newFromBalance;
