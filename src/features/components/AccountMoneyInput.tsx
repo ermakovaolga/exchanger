@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useEffect} from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 
 import { AccountProps, CURRENCIES, RatesProps, TEXT_COLOR, TEXT_ERROR_COLOR } from '../../core';
 
@@ -11,7 +11,6 @@ export  const AccountMoneyInput = (
         inputMoneyValue,
         onInputMoneyChange,
         valid,
-        setAccountCount,
         setValid,
         accounts,
         inputFromError,
@@ -25,7 +24,6 @@ export  const AccountMoneyInput = (
         inputMoneyValue: string,
         onInputMoneyChange: (value: string) => void,
         valid: boolean,
-        setAccountCount?: React.Dispatch<React.SetStateAction<number>>;
         setValid?: React.Dispatch<React.SetStateAction<boolean>>;
         accounts: AccountProps[];
         inputFromError?:string;
@@ -45,15 +43,6 @@ export  const AccountMoneyInput = (
         }
 
     }, [inputMoneyValue, balanceValue]);
-
-
-    useEffect(() => {
-        const selectedAccount = accounts.find(item => item.currency === value);
-        if (selectedAccount) {
-            setAccountCount?.(selectedAccount.balance);
-        }
-    },[value, accounts]);
-
 
     return (
         <div className={"ExchangeBlock"}>
