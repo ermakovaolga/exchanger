@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { getMoneySign } from '../helpers';
 import { CurrencyProps } from '../../core';
 
