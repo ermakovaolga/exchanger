@@ -81,7 +81,8 @@ button.ExchangeSubmit:disabled{
   height: 80%;
 }
 .SubmitNotification,
-.ErrorNotification {
+.ErrorNotification,
+.NotificationSuccess {
   text-align: left;
   padding: 25px 5px;
   height: 100px;
@@ -95,6 +96,11 @@ button.ExchangeSubmit:disabled{
   font-size: calc(8px + 1vmin);
   white-space: nowrap;
   width: auto;
+}
+.NotificationSuccess {
+  color: #006600;
+  white-space: pre;
+  font-size: calc(10px + 2vmin);
 }
 select {
   color: #282c34;

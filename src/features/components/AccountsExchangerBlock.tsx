@@ -28,7 +28,7 @@ export const AccountsExchangerBlock = (
     }
 ) => {
 
-    const [notification, setNotification] = useState('');
+    const [notification, setNotification] = useState({className: 'NotificationSuccess', message: ''});
 
     const [validFrom, setValidFrom] = useState<boolean>(true);
     const [validTo, setValidTo] = useState<boolean>(false);
@@ -47,9 +47,9 @@ export const AccountsExchangerBlock = (
         const newFromBalance = (sellDirection ? fromAccountCount-fromMoneyInput : fromAccountCount+fromMoneyInput);
         setFromAccountCount(newFromBalance);
         setTimeout(() => {
-            setNotification('');
+            setNotification({className: 'NotificationSuccess', message: ''});
         }, DELAY_SUCCESS);
-        setNotification(`${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? fromAccountCurrencyValue : toAccountCurrencyValue} was succesfully exchanged`)
+        setNotification({className: 'NotificationSuccess', message: `${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? fromAccountCurrencyValue : toAccountCurrencyValue} was succesfully exchanged`})
         const selectedAccount = accounts.find(item => item.currency === fromAccountCurrencyValue);
         if (selectedAccount) {
             selectedAccount.balance = newFromBalance;
@@ -68,34 +68,22 @@ export const AccountsExchangerBlock = (
     const onInputChange = (value: string, isFrom: boolean, callback: (val: string, toAccountRate: number) => void) => {
         setInputFromError('');
         setInputToError('');
-        if(value === '+' || value === '-') {
-            value = '0';
-        }
-        if(isNaN(Number(value))) {
-            const msg = 'The input should be number';
-            isFrom ? setInputFromError(msg) : setInputToError(msg);
-        } else {
-            if(value.indexOf('.') >=0) {
-                if (value.substring(value.indexOf('.') + 1, value.length).length === 0 && Number(value) < 0) {
+        const reg = /^[+-]?\d+[.]?[\d]?[\d]?$/;
+        if (value !== "") {
+            if(value === '-' || value === '+') {
+                value = '0';
+            }
+            if (reg.test(value)) {
+                if (value.indexOf('.') === value.length - 1) {
                     value = value.substring(1, value.length);
                 } else {
-                    if (value.substring(value.indexOf('.') + 1, value.length).length > 0 && Number(value) < 0) {
-                        value = (Number(value) * -1).toFixed(value.substring(value.indexOf('.') + 1, value.length).length);
-                    }
-                }
-                if(value.substring(value.indexOf('.') + 1, value.length).length > 2) {
-                    value = Number(value).toFixed(2);
-                }
-                if(value.indexOf('+') >=0 ) {
-                    value = value.substring(value.indexOf('+')+1, value.length);
+                    const float = parseFloat(value) < 0 ? parseFloat(value) * -1 : parseFloat(value);
+                    value = float.toString();
                 }
                 callback(value, toAccountCurrencyRate);
             } else {
-                if (value !== "") {
-                    value = (Number(value) < 0 ? (Number(value) * -1) : Number(value)).toString();
-                }
-                callback(value, toAccountCurrencyRate);
-
+                const msg = 'The input should be number';
+                isFrom ? setInputFromError(msg) : setInputToError(msg);
             }
         }
     };
@@ -109,7 +97,7 @@ export const AccountsExchangerBlock = (
     const onToInputChange = (value: string) => {
         onInputChange(value, false,(val, toAccountRate) => {
             setToMoneyInput(val);
-            setFromMoneyInput(val ? (toAccountCurrencyRate ? Number(val)/toAccountCurrencyRate : toAccountCurrencyRate).toFixed(2) : val);
+            setFromMoneyInput(val ? (toAccountRate ? Number(val)/toAccountRate : toAccountRate).toFixed(2) : val);
         });
     };
 
@@ -130,7 +118,7 @@ export const AccountsExchangerBlock = (
     }, [toAccountCurrencyRate]);
 
     useEffect(() => {
-        setNotification(error);
+        setNotification({className: 'SubmitNotification', message: error});
     }, [error]);
 
     return (
@@ -171,8 +159,8 @@ export const AccountsExchangerBlock = (
                 inputToError={inputToError}
                 onBlurMoneyInput={onToMoneyBlur}
             />
-            <div className={"SubmitNotification"} data-testid={'notificationBlock'}>
-                {notification}
+            <div className={notification.className} data-testid={'notificationBlock'}>
+                {notification.message}
             </div>
             <div>
                 <button disabled={!validTo || !validFrom} className={'ExchangeSubmit'} onClick={() => onSubmit(fromAccountCount, Number(fromMoneyInput))}>
