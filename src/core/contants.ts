@@ -12,5 +12,6 @@ export const ACCOUNTS_INIT_VALUE = [
     {id:'4', currency: CURRENCIES.RUB, balance: 300000.566}
     ];
 
+
 export const TEXT_COLOR='#282c34';
 export const TEXT_ERROR_COLOR='#d62424'
