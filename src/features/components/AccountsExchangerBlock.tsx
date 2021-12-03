@@ -68,34 +68,19 @@ export const AccountsExchangerBlock = (
     const onInputChange = (value: string, isFrom: boolean, callback: (val: string, toAccountRate: number) => void) => {
         setInputFromError('');
         setInputToError('');
-        if(value === '+' || value === '-') {
-            value = '0';
-        }
-        if(isNaN(Number(value))) {
-            const msg = 'The input should be number';
-            isFrom ? setInputFromError(msg) : setInputToError(msg);
-        } else {
-            if(value.indexOf('.') >=0) {
-                if (value.substring(value.indexOf('.') + 1, value.length).length === 0 && Number(value) < 0) {
+        const reg = /^[+-]?\d+[(\.)]?[\d]?[\d]?$/;
+        if (value !== "") {
+            if (reg.test(value)) {
+                if (value.indexOf('.') === value.length - 1) {
                     value = value.substring(1, value.length);
                 } else {
-                    if (value.substring(value.indexOf('.') + 1, value.length).length > 0 && Number(value) < 0) {
-                        value = (Number(value) * -1).toFixed(value.substring(value.indexOf('.') + 1, value.length).length);
-                    }
-                }
-                if(value.substring(value.indexOf('.') + 1, value.length).length > 2) {
-                    value = Number(value).toFixed(2);
-                }
-                if(value.indexOf('+') >=0 ) {
-                    value = value.substring(value.indexOf('+')+1, value.length);
+                    const float = parseFloat(value) < 0 ? parseFloat(value) * -1 : parseFloat(value);
+                    value = float.toString();
                 }
                 callback(value, toAccountCurrencyRate);
             } else {
-                if (value !== "") {
-                    value = (Number(value) < 0 ? (Number(value) * -1) : Number(value)).toString();
-                }
-                callback(value, toAccountCurrencyRate);
-
+                const msg = 'The input should be number';
+                isFrom ? setInputFromError(msg) : setInputToError(msg);
             }
         }
     };
