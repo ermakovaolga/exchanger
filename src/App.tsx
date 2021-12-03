@@ -1,22 +1,22 @@
-import React, {useState, useRef, useCallback, useMemo} from 'react';
+import React, {useState} from 'react';
 import 'react-widgets/styles.css';
-import { from } from 'rxjs';
+import {from} from 'rxjs';
 
 import './App.css';
 
-import { getMoneySign } from './features/helpers';
-import { AccountsExchangerBlock } from './features/components/AccountsExchangerBlock';
+import {getMoneySign} from './features/helpers';
+import {AccountsExchangerBlock} from './features/components/AccountsExchangerBlock';
 import {
+    AccountProps,
+    ACCOUNTS_INIT_VALUE,
+    APP_ID,
     CURRENCIES,
+    DELAY_POLLING,
     RatesProps,
     RatesResponceProps,
-    APP_ID,
-    DELAY_POLLING,
-    serverURL,
-    AccountProps,
-    ACCOUNTS_INIT_VALUE
+    serverURL
 } from './core';
-import { useInterval } from './features/hooks';
+import {useInterval} from './features/hooks';
 import Icons from './features/components/Icons';
 
 function App() {
@@ -30,14 +30,16 @@ function App() {
     const [fromAccountCurrencyRate, setFromAccountCurrencyRate] = useState<number>(1);
     const [toAccountCurrencyRate, setToAccountCurrencyRate] = useState<number>(0);
 
-     const onCurrencyAccountChange = (value: CURRENCIES, isFrom: boolean, rates: RatesProps|null) => {
-        if(rates) {
+     const onCurrencyAccountChange = (value: string, isFrom: boolean, rates: RatesProps|null) => {
+         const currency = value as keyof typeof CURRENCIES;
+
+         if(rates) {
             if(isFrom) {
-                setFromCurrency(value);
+                setFromCurrency(CURRENCIES[currency]);
             } else {
-                setToCurrency(value);
+                setToCurrency(CURRENCIES[currency]);
             }
-            const formula = isFrom ? rates[toCurrency] / rates[value] : rates[value] / rates[fromCurrency];
+            const formula = isFrom ? rates[toCurrency] / rates[currency] : rates[currency] / rates[fromCurrency];
             setFromAccountCurrencyRate(1);
             setToAccountCurrencyRate(formula);
         }
@@ -47,7 +49,7 @@ function App() {
     const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
 
 
-    const callbackFn = (result: RatesResponceProps) => {
+    const loadRatesCallback = (result: RatesResponceProps) => {
         setError('');
         setRates(result.rates || null);
         if(result.rates) {
@@ -56,17 +58,16 @@ function App() {
                 onCurrencyAccountChange(fromCurrency, true, result.rates);
             }
             if(toAccountCurrencyRate !== result.rates[toCurrency]) {
-               // setToAccountCurrencyRate(result.rates[toCurrency]);
                 onCurrencyAccountChange(toCurrency, false, result.rates);
             }
         }
     };
 
-    useInterval({
+    useInterval<RatesResponceProps, void>({
         error: error,
         skipWhileFn: (err) => err.length !== 0,
-        callback: callbackFn,
-        mergeMapFn: ((clb: (data: any) => void) => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`)
+        callback: loadRatesCallback,
+        mergeMapFn: ((clb: (data: RatesResponceProps) => void) => from(fetch(`${serverURL}/latest.json?app_id=${APP_ID}`)
             .then(res =>  {
                 return res.ok ? res.json() : Promise.reject(res);
             })
@@ -77,7 +78,7 @@ function App() {
         delayInterval: DELAY_POLLING,
     });
 
-    const onAccChange = ((value: any, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
+    const onAccChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
 
     return (
         <div className="App">
