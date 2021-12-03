@@ -1,7 +1,7 @@
 import React, { useEffect, useState} from 'react';
 
 import { AccountMoneyInput } from './AccountMoneyInput';
-import {AccountProps, CURRENCIES, RatesProps, ACCOUNTS_INIT_VALUE, DELAY_SUCCESS} from '../../core';
+import {AccountProps, CURRENCIES, RatesProps, DELAY_SUCCESS} from '../../core';
 import Icons from './Icons';
 
 export const AccountsExchangerBlock = (
@@ -115,7 +115,7 @@ export const AccountsExchangerBlock = (
 
     const onFromMoneyBlur = (value: string) => {
         if(value.indexOf('.') >=0 && value.indexOf('.') === value.length-1) {
-            setFromMoneyInput((value));
+            setFromMoneyInput((Number(value) > 0 ? Number(value) : (-1* Number(value))).toString());
         }
     }
 
@@ -163,7 +163,7 @@ export const AccountsExchangerBlock = (
                 rates={rates}
                 valid={validTo}
                 value={toAccountCurrencyValue}
-                onCurrencyChange={(v) => onAccountChange?.(v, false)}
+                onCurrencyChange={(v: string) => onAccountChange?.(v, false)}
                 balanceValue={toAccountCount}
                 inputMoneyValue={toMoneyInput === "" ? "" : (Number(toMoneyInput) === 0 ? '0' : (sellDirection ? '+' : '-') + toMoneyInput)}
                 onInputMoneyChange={onToInputChange}

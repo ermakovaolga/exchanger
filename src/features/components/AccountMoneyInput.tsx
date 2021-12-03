@@ -41,7 +41,7 @@ export  const AccountMoneyInput = (
         if(current > 0) {
             setValid?.(true);
         } else {
-            setValid?.(current !== 0 && balanceValue > (-1*current));
+            setValid?.(current !== 0 && balanceValue >= (-1*current));
         }
 
     }, [inputMoneyValue, balanceValue]);
@@ -54,10 +54,6 @@ export  const AccountMoneyInput = (
         }
     },[value, accounts]);
 
-    const opts: any = [];
-    accounts.forEach(i => {
-        opts.push((<option className={"optionClass"} value={i.currency}>{i.currency}</option> ));
-    });
 
     return (
         <div className={"ExchangeBlock"}>
@@ -65,7 +61,9 @@ export  const AccountMoneyInput = (
                 <select
                     value={value}
                     onChange={(event:ChangeEvent<HTMLSelectElement>) => onCurrencyChange?.(event.target.value, false, rates)}>
-                    {opts}
+                    {accounts.map(i => {
+                       return(<option className={"optionClass"} key={i.id} value={i.currency}>{i.currency}</option> );
+                    })}
                 </select>
 
                 <input
@@ -76,6 +74,7 @@ export  const AccountMoneyInput = (
                     onBlur={(e: React.ChangeEvent<HTMLInputElement>)=> {
                         onBlurMoneyInput?.(e.target.value);
                     }}
+                    maxLength={13}
                     value={inputMoneyValue}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         onInputMoneyChange?.(e.target.value);

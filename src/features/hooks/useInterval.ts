@@ -2,7 +2,7 @@ import {useEffect, useRef} from 'react';
 import { delay, mergeMap, repeat, skipWhile } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 
-export function useInterval(
+export function useInterval<ValueType = any, ObsType = any>(
     {
         error,
         skipWhileFn,
@@ -12,11 +12,11 @@ export function useInterval(
     }: {
         error: string,
         skipWhileFn: (err: string) => boolean;
-        mergeMapFn: (clb: (data: any) => void) => Observable<any>;
+        mergeMapFn: (clb: (data: ValueType) => void) => Observable<ObsType>;
         delayInterval: number | Date;
-        callback: (data: any) => void;
+        callback: (data: ValueType) => void;
     }) {
-    const savedCallback = useRef((data: any) => {});
+    const savedCallback = useRef((data: ValueType) => {});
 
     useEffect(() => {
         savedCallback.current = callback;
