@@ -1,64 +1,65 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-widgets/styles.css';
-import {from} from 'rxjs';
+import { from } from 'rxjs';
 
 import './App.css';
 
-import {getMoneySign} from './features/helpers';
-import {AccountsExchangerBlock} from './features/components/AccountsExchangerBlock';
 import {
     AccountProps,
     ACCOUNTS_INIT_VALUE,
     APP_ID,
-    CURRENCIES,
-    DELAY_POLLING,
+    CURRENCIES, CurrencyProps,
+    DELAY_POLLING, DELAY_SUCCESS,
     RatesProps,
     RatesResponceProps,
     serverURL
 } from './core';
-import {useInterval} from './features/hooks';
+import { useInterval } from './features/hooks';
 import Icons from './features/components/Icons';
+import { AccountsExchangerBlock, RatePanel } from './features/components';
 
 function App() {
+
+    const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
     const [sellDirection, setSellDirection] = useState(true);
 
     const sellText =(sellDirection ? 'Sell ': 'Buy');
 
-    const [fromCurrency, setFromCurrency] = useState<CURRENCIES>(CURRENCIES.USD);
-    const [toCurrency, setToCurrency] = useState<CURRENCIES>(CURRENCIES.EUR);
+    const [currencyFromState, setCurrencyFromState ] = useState<CurrencyProps>({isFrom: true, currency: CURRENCIES.USD, rate: 0, balance: 0});
+    const [currencyToState, setCurrencyToState ] = useState<CurrencyProps>({isFrom: false, currency: CURRENCIES.EUR, rate: 0, balance: 0});
 
-    const [fromAccountCurrencyRate, setFromAccountCurrencyRate] = useState<number>(1);
-    const [toAccountCurrencyRate, setToAccountCurrencyRate] = useState<number>(0);
-
-     const onCurrencyAccountChange = (value: string, isFrom: boolean, rates: RatesProps|null) => {
+    const onCurrencyAccountChange = (value: string, isFrom: boolean, rates: RatesProps|null) => {
          const currency = value as keyof typeof CURRENCIES;
-
          if(rates) {
+             const currentAccount = accounts.filter((account) => account.currency === currency);
             if(isFrom) {
-                setFromCurrency(CURRENCIES[currency]);
+                setCurrencyFromState({currency: CURRENCIES[currency], isFrom: currencyFromState.isFrom, rate: rates[currency], balance:  currentAccount[0].balance} );
             } else {
-                setToCurrency(CURRENCIES[currency]);
+                setCurrencyToState({currency: CURRENCIES[currency], isFrom: currencyToState.isFrom, rate: rates[currency], balance: currentAccount[0].balance} );
             }
-            const formula = isFrom ? rates[toCurrency] / rates[currency] : rates[currency] / rates[fromCurrency];
-            setFromAccountCurrencyRate(1);
-            setToAccountCurrencyRate(formula);
         }
     };
     const [rates, setRates] = useState<RatesProps|null>(null);
-    const [error, setError] = useState('');
-    const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
 
+    const [error, setError] = useState('');
+
+    const [notification, setNotification] = useState({className: 'NotificationSuccess', message: ''});
+
+    const [fromMoneyInput, setFromMoneyInput] = useState<string>('');
+    const [toMoneyInput, setToMoneyInput] = useState<string>('');
+
+    const [disabledSubmit, setDisabledSubmit] = useState<boolean>(true);
 
     const loadRatesCallback = (result: RatesResponceProps) => {
         setError('');
         setRates(result.rates || null);
         if(result.rates) {
-            if(fromAccountCurrencyRate !== result.rates[fromCurrency]) {
-                setFromAccountCurrencyRate(result.rates[fromCurrency]);
-                onCurrencyAccountChange(fromCurrency, true, result.rates);
+            if(currencyFromState.rate !== result.rates[currencyFromState.currency]) {
+                setCurrencyFromState({currency: CURRENCIES[currencyFromState.currency], isFrom: currencyFromState.isFrom, rate: result.rates[currencyFromState.currency], balance: currencyFromState.balance} )
+                onCurrencyAccountChange(currencyFromState.currency, true, result.rates);
             }
-            if(toAccountCurrencyRate !== result.rates[toCurrency]) {
-                onCurrencyAccountChange(toCurrency, false, result.rates);
+            if(currencyToState.rate !== result.rates[currencyToState.currency]) {
+                onCurrencyAccountChange(currencyToState.currency, false, result.rates);
             }
         }
     };
@@ -80,42 +81,78 @@ function App() {
 
     const onAccChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
 
+      const onSubmit = () => {
+        const newFromBalance = (sellDirection ? currencyFromState.balance-Number(fromMoneyInput) : currencyFromState.balance+Number(fromMoneyInput));
+        setCurrencyFromState({currency: CURRENCIES[currencyFromState.currency], isFrom: currencyFromState.isFrom, rate: currencyFromState.rate, balance: newFromBalance});
+
+        setTimeout(() => {
+            setNotification({className: 'NotificationSuccess', message: ''});
+        }, DELAY_SUCCESS);
+        setNotification({className: 'NotificationSuccess', message: `${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? currencyFromState.currency : currencyToState.currency} was succesfully exchanged`})
+
+        const selectedAccount = accounts.find(item => item.currency === currencyFromState.currency);
+        if (selectedAccount) {
+            selectedAccount.balance = newFromBalance;
+        }
+
+        const newToBalance = (sellDirection ? currencyToState.balance+Number(toMoneyInput) : currencyToState.balance-Number(toMoneyInput));
+        setCurrencyToState({currency: CURRENCIES[currencyToState.currency], isFrom: currencyToState.isFrom, rate: currencyToState.rate, balance: newToBalance});
+        const selectedToAccount = accounts.find(item => item.currency === currencyToState.currency);
+        if (selectedToAccount) {
+            selectedToAccount.balance = newToBalance;
+        }
+
+        setToMoneyInput('');
+        setFromMoneyInput('');
+    };
+    useEffect(() => {
+        setNotification({className: 'SubmitNotification', message: error});
+    }, [error]);
+
     return (
         <div className="App">
             <div className={'Exchange'}>
                 <div className={'ExchangeBody'}>
-                    <h3>{`${sellText} ${fromCurrency}`}</h3>
-                    <p>
+                    <h3>{`${sellText} ${currencyFromState.currency}`}</h3>
+                    <div className={"ExchangeRatesPanel"}>
                         <img
                             src={Icons.money}
-                            style={{width: '16px', marginRight: '8px'}}
+                            width={16}
+                            style={{ marginRight: '8px'}}
                             alt={'Money'}
                         />
-                        <img
-                            style={{width: '16px', position:'relative', top: '1px', margin: '0 2px 0 4px'} }
-                            alt={fromCurrency}
-                            src={getMoneySign(fromCurrency)}
+                        <RatePanel
+                            currencyState={currencyFromState}
+                            text={`${currencyFromState.rate === 0 ? 0 :1} =`}
                         />
-                        {fromAccountCurrencyRate === 0 ? fromAccountCurrencyRate : fromAccountCurrencyRate.toFixed(2) + ' = ' }
-                        <img
-                            alt={toCurrency}
-                            style={{width: '16px', position:'relative', top: '1px', margin: '0 2px 0 4px'}}
-                            src={getMoneySign(toCurrency)}
+                        <RatePanel
+                            currencyState={currencyToState}
+                            text={currencyFromState.rate === 0 ? '0' : (currencyToState.rate / currencyFromState.rate).toFixed(2)}
                         />
-                        {toAccountCurrencyRate.toFixed(2)}
-                    </p>
+                    </div>
 
                     <AccountsExchangerBlock
                         rates={rates}
                         accounts={accounts}
-                        fromAccountCurrencyValue={fromCurrency}
-                        toAccountCurrencyValue={toCurrency}
+                        currencyFromState={currencyFromState}
+                        currencyToState={currencyToState}
                         sellDirection={sellDirection}
                         setSellDirection={setSellDirection}
-                        toAccountCurrencyRate={toAccountCurrencyRate}
                         onAccountChange={onAccChange}
-                        error={error}
+                        setToMoneyInput={setToMoneyInput}
+                        setFromMoneyInput={setFromMoneyInput}
+                        setDisabledSubmit={setDisabledSubmit}
+                        fromMoneyInput={fromMoneyInput}
+                        toMoneyInput={toMoneyInput}
                     />
+                    <div className={notification.className} data-testid={'notificationBlock'}>
+                        {notification.message}
+                    </div>
+                    <div>
+                        <button disabled={disabledSubmit} className={'ExchangeSubmit'} onClick={() => onSubmit()}>
+                            {`${sellDirection ? 'Sell ': 'Buy'} ${currencyFromState.currency} for ${currencyToState.currency}`}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

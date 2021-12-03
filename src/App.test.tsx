@@ -66,14 +66,14 @@ describe('test App', () => {
     const comboboxes = screen.getAllByRole('combobox');
     expect(comboboxes).toHaveLength(2);
 
-    const input = screen.getAllByDisplayValue('0');
+    const input = screen.getAllByPlaceholderText('0');
     expect(input[0]).toBeInTheDocument();
     const inputTo = input[1];
     expect(inputTo).toBeInTheDocument();
 
     const balanceTexts = screen.getAllByTestId('balanceValue');
     await expect(balanceTexts).toHaveLength(2);
-    await expect(balanceTexts[0]).toHaveTextContent('Balance: 1000.07');
+    await expect(balanceTexts[0]).toHaveTextContent('Balance: 0.00');
 
   });
 

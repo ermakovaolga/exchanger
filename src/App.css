@@ -119,3 +119,8 @@ select {
 .ExchangeCombobox {
   width: auto;
 }
+.ExchangeRatesPanel {
+  display: flex;
+  font-size: calc(8px + 1vmin);
+  margin: 4px 0 8px 0;
+}

@@ -22,3 +22,10 @@ export interface RatesResponceProps {
     rates?: RatesProps,
     timestamp?: number;
 }
+
+export interface CurrencyProps {
+    isFrom: boolean;
+    rate: number;
+    balance: number;
+    currency: CURRENCIES;
+}
