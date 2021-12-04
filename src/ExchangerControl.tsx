@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import 'react-widgets/styles.css';
 import { from } from 'rxjs';
 
-import './App.css';
+import './ExchangerControl.css';
 
 import {
     AccountProps,
     ACCOUNTS_INIT_VALUE,
     APP_ID,
     CURRENCIES, CurrencyProps,
-    DELAY_POLLING, DELAY_SUCCESS,
+    DELAY_POLLING,
+    DELAY_SUCCESS,
+    NotificationProps,
     RatesProps,
     RatesResponceProps,
     serverURL
@@ -18,7 +20,7 @@ import { useInterval } from './features/hooks';
 import Icons from './features/components/Icons';
 import { AccountsExchangerBlock, RatePanel } from './features/components';
 
-function App() {
+function ExchangerControl() {
 
     const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
     const [sellDirection, setSellDirection] = useState(true);
@@ -40,15 +42,8 @@ function App() {
         }
     };
     const [rates, setRates] = useState<RatesProps|null>(null);
-
     const [error, setError] = useState('');
-
-    const [notification, setNotification] = useState({className: 'NotificationSuccess', message: ''});
-
-    const [fromMoneyInput, setFromMoneyInput] = useState<string>('');
-    const [toMoneyInput, setToMoneyInput] = useState<string>('');
-
-    const [disabledSubmit, setDisabledSubmit] = useState<boolean>(true);
+    const [notification, setNotification] = useState<NotificationProps>({className: 'NotificationSuccess', message: ''});
 
     const loadRatesCallback = (result: RatesResponceProps) => {
         setError('');
@@ -56,10 +51,10 @@ function App() {
         if(result.rates) {
             if(currencyFromState.rate !== result.rates[currencyFromState.currency]) {
                 setCurrencyFromState({currency: CURRENCIES[currencyFromState.currency], isFrom: currencyFromState.isFrom, rate: result.rates[currencyFromState.currency], balance: currencyFromState.balance} )
-                onCurrencyAccountChange(currencyFromState.currency, true, result.rates);
+                onCurrencyAccountChange(currencyFromState.currency, currencyFromState.isFrom, result.rates);
             }
             if(currencyToState.rate !== result.rates[currencyToState.currency]) {
-                onCurrencyAccountChange(currencyToState.currency, false, result.rates);
+                onCurrencyAccountChange(currencyToState.currency, currencyToState.isFrom, result.rates);
             }
         }
     };
@@ -79,9 +74,9 @@ function App() {
         delayInterval: DELAY_POLLING,
     });
 
-    const onAccChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
+    const onCurrencyChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
 
-      const onSubmit = () => {
+    const onSubmit = (fromMoneyInput: string,  toMoneyInput: string) => {
         const newFromBalance = (sellDirection ? currencyFromState.balance-Number(fromMoneyInput) : currencyFromState.balance+Number(fromMoneyInput));
         setCurrencyFromState({currency: CURRENCIES[currencyFromState.currency], isFrom: currencyFromState.isFrom, rate: currencyFromState.rate, balance: newFromBalance});
 
@@ -101,24 +96,21 @@ function App() {
         if (selectedToAccount) {
             selectedToAccount.balance = newToBalance;
         }
-
-        setToMoneyInput('');
-        setFromMoneyInput('');
     };
     useEffect(() => {
         setNotification({className: 'SubmitNotification', message: error});
     }, [error]);
 
     return (
-        <div className="App">
+        <div className={'ExchangerControl'}>
             <div className={'Exchange'}>
                 <div className={'ExchangeBody'}>
                     <h3>{`${sellText} ${currencyFromState.currency}`}</h3>
-                    <div className={"ExchangeRatesPanel"}>
+                    <div className={'ExchangeRatesPanel'}>
                         <img
                             src={Icons.money}
                             width={16}
-                            style={{ marginRight: '8px'}}
+                            className={'MoneyIcon'}
                             alt={'Money'}
                         />
                         <RatePanel
@@ -132,31 +124,20 @@ function App() {
                     </div>
 
                     <AccountsExchangerBlock
-                        rates={rates}
                         accounts={accounts}
                         currencyFromState={currencyFromState}
                         currencyToState={currencyToState}
                         sellDirection={sellDirection}
                         setSellDirection={setSellDirection}
-                        onAccountChange={onAccChange}
-                        setToMoneyInput={setToMoneyInput}
-                        setFromMoneyInput={setFromMoneyInput}
-                        setDisabledSubmit={setDisabledSubmit}
-                        fromMoneyInput={fromMoneyInput}
-                        toMoneyInput={toMoneyInput}
+                        onCurrencyChange={onCurrencyChange}
+                        onSubmit={onSubmit}
+                        notification={notification}
                     />
-                    <div className={notification.className} data-testid={'notificationBlock'}>
-                        {notification.message}
-                    </div>
-                    <div>
-                        <button disabled={disabledSubmit} className={'ExchangeSubmit'} onClick={() => onSubmit()}>
-                            {`${sellDirection ? 'Sell ': 'Buy'} ${currencyFromState.currency} for ${currencyToState.currency}`}
-                        </button>
-                    </div>
+
                 </div>
             </div>
         </div>
     );
 }
 
-export default App;
+export default ExchangerControl;

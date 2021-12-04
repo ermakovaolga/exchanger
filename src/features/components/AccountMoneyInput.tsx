@@ -1,33 +1,26 @@
 import React, { ChangeEvent, useEffect } from 'react';
 
-import { AccountProps, CURRENCIES, RatesProps, TEXT_COLOR, TEXT_ERROR_COLOR } from '../../core';
+import { AccountProps, CurrencyProps, TEXT_COLOR, TEXT_ERROR_COLOR } from '../../core';
 
 export  const AccountMoneyInput = (
     {
-        rates,
-        value,
         onCurrencyChange,
-        balanceValue,
         inputMoneyValue,
         onInputMoneyChange,
         valid,
         setValid,
         accounts,
-        inputFromError,
-        inputToError,
         onBlurMoneyInput,
+        currencyState,inputError,
     }: {
-        rates: RatesProps|null,
-        value:  CURRENCIES,
-        onCurrencyChange?: (value: string, isFrom: boolean, rates: RatesProps|null)=> void,
-        balanceValue: number,
+        currencyState: CurrencyProps,
+        onCurrencyChange?: (value: string, isFrom: boolean)=> void,
         inputMoneyValue: string,
-        onInputMoneyChange: (value: string) => void,
+        onInputMoneyChange?: (value: string, currencyState: CurrencyProps) => void,
         valid: boolean,
         setValid?: React.Dispatch<React.SetStateAction<boolean>>;
         accounts: AccountProps[];
-        inputFromError?:string;
-        inputToError?:string;
+        inputError?:string;
         onBlurMoneyInput?: (value: string) => void,
     }) => {
 
@@ -39,17 +32,17 @@ export  const AccountMoneyInput = (
         if(current > 0) {
             setValid?.(true);
         } else {
-            setValid?.(current !== 0 && balanceValue >= (-1*current));
+            setValid?.(current !== 0 && Number(currencyState.balance.toFixed(2)) >= (-1*current));
         }
 
-    }, [inputMoneyValue, balanceValue]);
+    }, [inputMoneyValue, currencyState.balance]);
 
     return (
         <div className={"ExchangeBlock"}>
             <div  style={{display: 'flex', marginBottom: '4px'}}>
                 <select
-                    value={value}
-                    onChange={(event:ChangeEvent<HTMLSelectElement>) => onCurrencyChange?.(event.target.value, false, rates)}>
+                    value={currencyState.currency}
+                    onChange={(event:ChangeEvent<HTMLSelectElement>) => onCurrencyChange?.(event.target.value, false)}>
                     {accounts.map(i => {
                        return(<option className={"optionClass"} key={i.id} value={i.currency}>{i.currency}</option> );
                     })}
@@ -66,26 +59,18 @@ export  const AccountMoneyInput = (
                     maxLength={13}
                     value={inputMoneyValue}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        onInputMoneyChange?.(e.target.value);
+                        onInputMoneyChange?.(e.target.value, currencyState);
                     }}/>
             </div>
             <div  style={{display: 'flex'}}>
                 <div className={"BalanceText"} data-testid={'balanceValue'}>
-                    {`Balance: ${balanceValue.toFixed(2)}`}
+                    {`Balance: ${currencyState.balance.toFixed(2)}`}
                 </div>
-                {inputFromError &&
-                (<div className={"ErrorNotification"}>
-                    {inputFromError}
-                </div>)
-                }
-                {inputToError &&
-                (<div className={"ErrorNotification"}>
-                    {inputToError}
+                {inputError && (<div className={"ErrorNotification"}>
+                    {inputError}
                 </div>)
                 }
             </div>
-
-
         </div>
     );
 }

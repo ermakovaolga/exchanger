@@ -29,3 +29,7 @@ export interface CurrencyProps {
     balance: number;
     currency: CURRENCIES;
 }
+export interface NotificationProps {
+    className: string;
+    message: string;
+}
