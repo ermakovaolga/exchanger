@@ -26,9 +26,6 @@ export  const AccountMoneyInput = (
 
     useEffect(() => {
         let current = Number(inputMoneyValue);
-        if(current === -0) {
-            current = 0;
-        }
         if(current > 0) {
             setValid?.(true);
         } else {
