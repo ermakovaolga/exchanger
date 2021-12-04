@@ -99,7 +99,7 @@ button.ExchangeSubmit:disabled{
 }
 .NotificationSuccess {
   color: #006600;
-  white-space: none;
+  white-space: normal;
   font-size: calc(9px + 2vmin);
 }
 select {
