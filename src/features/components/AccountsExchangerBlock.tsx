@@ -1,7 +1,7 @@
 import React, { useEffect, useState} from 'react';
 
 import { AccountMoneyInput } from './AccountMoneyInput';
-import { AccountProps, RatesProps, CurrencyProps } from '../../core';
+import { AccountProps, CurrencyProps, NotificationProps } from '../../core';
 import Icons from './Icons';
 
 export const AccountsExchangerBlock = (
@@ -10,40 +10,34 @@ export const AccountsExchangerBlock = (
         setSellDirection,
         currencyFromState,
         currencyToState,
-        rates,
-        onAccountChange,
+        onCurrencyChange,
         accounts,
-        setToMoneyInput,
-        setFromMoneyInput,
-        fromMoneyInput,
-        toMoneyInput,
-        setDisabledSubmit,
+        onSubmit,
+        notification,
     }: {
         sellDirection: boolean;
         setSellDirection?: React.Dispatch<React.SetStateAction<boolean>>;
         currencyFromState: CurrencyProps,
         currencyToState: CurrencyProps,
-        rates: RatesProps|null;
-        onAccountChange?: (value: string, idFrom: boolean) => void;
+        onCurrencyChange?: (value: string, isFrom: boolean) => void;
         accounts: AccountProps[];
-        setToMoneyInput: React.Dispatch<React.SetStateAction<string>>;
-        setFromMoneyInput: React.Dispatch<React.SetStateAction<string>>;
-        fromMoneyInput: string;
-        toMoneyInput: string;
-        setDisabledSubmit?: React.Dispatch<React.SetStateAction<boolean>>;
+        onSubmit: (fromValue: string, toValue: string) => void;
+        notification: NotificationProps;
     }
 ) => {
+    const [disabledSubmit, setDisabledSubmit] = useState<boolean>(true);
 
     const [validFrom, setValidFrom] = useState<boolean>(true);
     const [validTo, setValidTo] = useState<boolean>(false);
 
-
     const [inputFromError, setInputFromError] = useState<string>('');
     const [inputToError, setInputToError] = useState<string>('');
 
+    const [fromMoneyInput, setFromMoneyInput] = useState<string>('');
+    const [toMoneyInput, setToMoneyInput] = useState<string>('');
 
 
-    const onInputChange = (value: string, isFrom: boolean, callback: (val: string, toAccountRate: number) => void) => {
+    const onInputChange = (value: string, currencyState: CurrencyProps) => {
         setInputFromError('');
         setInputToError('');
         const reg = /^[+-]?\d+[.]?[\d]?[\d]?$/;
@@ -53,25 +47,16 @@ export const AccountsExchangerBlock = (
             }
             if (reg.test(value)) {
                 value = (value.length > 1 && value.match(/[+-]/) != null) ? value.substring(1, value.length) : value;
-                callback(value, currencyToState.rate / currencyFromState.rate);
+                const toAccountRate = currencyToState.rate / currencyFromState.rate;
+                const ratedToValue = value ? ((Number(value) * toAccountRate).toFixed(2)) : value;
+                const ratedFromValue = value ? (toAccountRate ? Number(value)/toAccountRate : toAccountRate).toFixed(2) : value;
+                setFromMoneyInput(currencyState.isFrom ? value : ratedFromValue);
+                setToMoneyInput(currencyState.isFrom ? ratedToValue : value);
             } else {
                 const msg = 'The value should be a number';
-                isFrom ? setInputFromError(msg) : setInputToError(msg);
+                currencyState.isFrom ? setInputFromError(msg) : setInputToError(msg);
             }
         }
-    };
-    const onFromInputChange = (value: string) => {
-        onInputChange(value, true,(val, toAccountRate) => {
-            setFromMoneyInput(val);
-            setToMoneyInput(val ? ((Number(val) * toAccountRate).toFixed(2)) : val);
-        });
-    };
-
-    const onToInputChange = (value: string) => {
-        onInputChange(value, false,(val, toAccountRate) => {
-            setToMoneyInput(val);
-            setFromMoneyInput(val ? (toAccountRate ? Number(val)/toAccountRate : toAccountRate).toFixed(2) : val);
-        });
     };
 
     const onFromMoneyBlur = (value: string) => {
@@ -87,30 +72,29 @@ export const AccountsExchangerBlock = (
     }
 
     useEffect(() => {
-        onToInputChange(toMoneyInput.toString());
+        onInputChange(toMoneyInput.toString(), currencyToState);
     }, [currencyToState]);
 
     useEffect(() => {
-        onFromInputChange(fromMoneyInput.toString());
+        onInputChange(fromMoneyInput.toString(), currencyFromState);
     }, [currencyFromState]);
 
     useEffect(() => {
         setDisabledSubmit?.(!validTo || !validFrom);
     },[validTo, validFrom]);
-
+//
+   //
     return (
         <div>
             <AccountMoneyInput
+                currencyState={currencyFromState}
                 accounts={ accounts.filter((acc) => acc.currency !== currencyToState.currency)  }
-                rates={rates}
-                value={currencyFromState.currency}
-                onCurrencyChange={(v) => onAccountChange?.(v, true)}
-                balanceValue={currencyFromState.balance}
+                onCurrencyChange={(v) => onCurrencyChange?.(v, currencyFromState.isFrom)}
                 valid={validFrom}
+                inputError={inputFromError}
                 inputMoneyValue={fromMoneyInput === "" ? "" : (fromMoneyInput === '0' ? '0' : ((sellDirection ? '-' : '+') + fromMoneyInput))}
-                onInputMoneyChange={onFromInputChange}
+                onInputMoneyChange={onInputChange}
                 setValid={setValidFrom}
-                inputFromError={inputFromError}
                 onBlurMoneyInput={onFromMoneyBlur}
             />
             <div>
@@ -124,17 +108,26 @@ export const AccountsExchangerBlock = (
             <AccountMoneyInput
                 accounts={ accounts.filter((acc) => acc.currency !== currencyFromState.currency)}
                 setValid={setValidTo}
-                rates={rates}
                 valid={validTo}
-                value={currencyToState.currency}
-                onCurrencyChange={(v: string) => onAccountChange?.(v, false)}
-                balanceValue={currencyToState.balance}
+                inputError={inputToError}
+                currencyState={currencyToState}
+                onCurrencyChange={(v: string) => onCurrencyChange?.(v, currencyToState.isFrom)}
                 inputMoneyValue={toMoneyInput === "" ? "" : (Number(toMoneyInput) === 0 ? '0' : (sellDirection ? '+' : '-') + toMoneyInput)}
-                onInputMoneyChange={onToInputChange}
-                inputToError={inputToError}
+                onInputMoneyChange={onInputChange}
                 onBlurMoneyInput={onToMoneyBlur}
             />
-
+            <div className={notification.className} data-testid={'notificationBlock'}>
+                {notification.message}
+            </div>
+            <div>
+                <button disabled={disabledSubmit} className={'ExchangeSubmit'} onClick={() => {
+                    onSubmit(fromMoneyInput, toMoneyInput);
+                    setToMoneyInput('');
+                    setFromMoneyInput('');
+                }}>
+                    {`${sellDirection ? 'Sell ': 'Buy'} ${currencyFromState.currency} for ${currencyToState.currency}`}
+                </button>
+            </div>
         </div>
     )
 }
