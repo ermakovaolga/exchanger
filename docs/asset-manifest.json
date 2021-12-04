@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.css": "/exchanger/static/css/main.84b85660.chunk.css",
-    "main.js": "/exchanger/static/js/main.6e5f2897.chunk.js",
-    "main.js.map": "/exchanger/static/js/main.6e5f2897.chunk.js.map",
+    "main.css": "/exchanger/static/css/main.da9000e5.chunk.css",
+    "main.js": "/exchanger/static/js/main.f28b94af.chunk.js",
+    "main.js.map": "/exchanger/static/js/main.f28b94af.chunk.js.map",
     "runtime-main.js": "/exchanger/static/js/runtime-main.0cedc6b8.js",
     "runtime-main.js.map": "/exchanger/static/js/runtime-main.0cedc6b8.js.map",
     "static/css/2.fe85faac.chunk.css": "/exchanger/static/css/2.fe85faac.chunk.css",
@@ -12,7 +12,7 @@
     "static/js/3.bb685e83.chunk.js.map": "/exchanger/static/js/3.bb685e83.chunk.js.map",
     "index.html": "/exchanger/index.html",
     "static/css/2.fe85faac.chunk.css.map": "/exchanger/static/css/2.fe85faac.chunk.css.map",
-    "static/css/main.84b85660.chunk.css.map": "/exchanger/static/css/main.84b85660.chunk.css.map",
+    "static/css/main.da9000e5.chunk.css.map": "/exchanger/static/css/main.da9000e5.chunk.css.map",
     "static/js/2.2b536dd5.chunk.js.LICENSE.txt": "/exchanger/static/js/2.2b536dd5.chunk.js.LICENSE.txt",
     "static/media/down.b261a1c9.svg": "/exchanger/static/media/down.b261a1c9.svg"
   },
@@ -20,7 +20,7 @@
     "static/js/runtime-main.0cedc6b8.js",
     "static/css/2.fe85faac.chunk.css",
     "static/js/2.2b536dd5.chunk.js",
-    "static/css/main.84b85660.chunk.css",
-    "static/js/main.6e5f2897.chunk.js"
+    "static/css/main.da9000e5.chunk.css",
+    "static/js/main.f28b94af.chunk.js"
   ]
 }
