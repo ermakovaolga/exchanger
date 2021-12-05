@@ -81,7 +81,6 @@ export const AccountsExchangerBlock = (
 
     const onFromMoneyBlur = (value: string) => {
         if(value.indexOf('.') >=0 && value.indexOf('.') === value.length-1) {
-            const updatedValue = (parseInt(value)); //> 0 ? Number(value) : (-1* Number(value))).toString());
             setFromInputState({
                 valueToShow: fromInputState.value.toString(), value: fromInputState.value, error: fromInputState.error
             });
@@ -106,12 +105,13 @@ export const AccountsExchangerBlock = (
     }, [currencyFromState]);
 
     useEffect(() => {
-        setDisabledSubmit(toInputState.error.length !== 0 || fromInputState.error.length !== 0 || toInputState.value === 0 && fromInputState.value === 0);
+        const noErrors = toInputState.error.length !== 0 || fromInputState.error.length !== 0;
+        const nullValues = toInputState.value === 0 && fromInputState.value === 0;
+        setDisabledSubmit(noErrors || nullValues);
     },[toInputState, toInputState]);
 
     useEffect(() => {
-
-        let current = toInputState.value;
+        const current = toInputState.value;
         setToInputState({valueToShow: toInputState.valueToShow, value: toInputState.value, error: '' });
         if(current <= 0 && (current !== 0 && Number(currencyToState.balance.toFixed(2)) >= (-1*current))) {
             setToInputState({valueToShow: toInputState.valueToShow, value: toInputState.value, error: LESS_BALANCE_MSG });
@@ -119,8 +119,7 @@ export const AccountsExchangerBlock = (
     }, [currencyToState.balance]);
 
     useEffect(() => {
-
-        let current = fromInputState.value;
+        const current = fromInputState.value;
         setFromInputState({valueToShow: fromInputState.valueToShow, value: fromInputState.value, error: '' });
         if(current <= 0 && (current !== 0 && Number(currencyFromState.balance.toFixed(2)) >= (-1*current))) {
             setFromInputState({valueToShow: fromInputState.valueToShow, value: fromInputState.value, error: LESS_BALANCE_MSG });
