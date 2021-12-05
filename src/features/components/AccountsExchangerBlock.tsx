@@ -40,13 +40,18 @@ export const AccountsExchangerBlock = (
     const onInputChange = (valueFromInput: string, currencyState: CurrencyProps) => {
         valueFromInput = (valueFromInput.length >= 1 && valueFromInput.match(/[+-]/) != null) ? valueFromInput.substring(1, valueFromInput.length) : valueFromInput;
         if (valueFromInput !== "") {
-             const reg = /^\d+[.]?[\d]?[\d]?$/;   ///full string ^[+-]?\d+[.]?[\d]?[\d]?$/;
+            const reg = /^\d+[.]?[\d]?[\d]?$/;   ///full string ^[+-]?\d+[.]?[\d]?[\d]?$/;
             if (reg.test(valueFromInput)) {
                 const input = parseFloat(parseFloat(valueFromInput).toFixed(2));
                 if(input === 0) {
                     const nullReg = /^([0]?[.]?$)|^([0]?[.][0]?$)/;
                     if (!nullReg.test(valueFromInput)) {
                         valueFromInput = '0';
+                    }
+                } else {
+                    const nullReg = /^([0]\d+$)/;
+                    if (nullReg.test(valueFromInput)) {
+                        valueFromInput = input.toString();
                     }
                 }
                 const toAccountRate =  currencyFromState.rate ? currencyToState.rate / currencyFromState.rate : 0;
@@ -96,35 +101,19 @@ export const AccountsExchangerBlock = (
     }
 
     useEffect(() => {
-        onInputChange(toInputState.valueToShow, currencyToState);
-    }, [currencyToState]);
-
-    useEffect(() => {
-        onInputChange(fromInputState.valueToShow, currencyFromState);
-    }, [currencyFromState]);
+        setFromInputState({
+            valueToShow: '', value: 0, error: ''
+        });
+        setToInputState({
+            valueToShow: '', value: 0, error: ''
+        });
+    }, [currencyToState, currencyFromState]);
 
     useEffect(() => {
         const noErrors = toInputState.error.length !== 0 || fromInputState.error.length !== 0;
         const nullValues = toInputState.value === 0 && fromInputState.value === 0;
         setDisabledSubmit(noErrors || nullValues);
     },[toInputState, toInputState]);
-
-    useEffect(() => {
-        const current = toInputState.value;
-        setToInputState({valueToShow: toInputState.valueToShow, value: toInputState.value, error: '' });
-        if(current <= 0 && (current !== 0 && Number(currencyToState.balance.toFixed(2)) >= (-1*current))) {
-            setToInputState({valueToShow: toInputState.valueToShow, value: toInputState.value, error: LESS_BALANCE_MSG });
-        }
-    }, [currencyToState.balance]);
-
-    useEffect(() => {
-        const current = fromInputState.value;
-        setFromInputState({valueToShow: fromInputState.valueToShow, value: fromInputState.value, error: '' });
-        if(current <= 0 && (current !== 0 && Number(currencyFromState.balance.toFixed(2)) >= (-1*current))) {
-            setFromInputState({valueToShow: fromInputState.valueToShow, value: fromInputState.value, error: LESS_BALANCE_MSG });
-        }
-    }, [currencyFromState.balance]);
-
 
     return (
         <div>
