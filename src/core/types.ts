@@ -33,3 +33,9 @@ export interface NotificationProps {
     className: string;
     message: string;
 }
+
+export interface InputMoneyProps {
+    valueToShow: string;
+    value: number;
+    error: string;
+}
