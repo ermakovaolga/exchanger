@@ -38,10 +38,10 @@ export const AccountsExchangerBlock = (
     const [toInputState, setToInputState]= useState<InputMoneyProps>({ valueToShow: '', value: 0, error: ''});
 
     const onInputChange = (valueFromInput: string, currencyState: CurrencyProps) => {
+        valueFromInput = (valueFromInput.length >= 1 && valueFromInput.match(/[+-]/) != null) ? valueFromInput.substring(1, valueFromInput.length) : valueFromInput;
         if (valueFromInput !== "") {
-            const reg = /^[+-]?\d+[.]?[\d]?[\d]?$/;
+             const reg = /^\d+[.]?[\d]?[\d]?$/;   ///full string ^[+-]?\d+[.]?[\d]?[\d]?$/;
             if (reg.test(valueFromInput)) {
-                valueFromInput = (valueFromInput.length > 1 && valueFromInput.match(/[+-]/) != null) ? valueFromInput.substring(1, valueFromInput.length) : valueFromInput;
                 const input = parseFloat(parseFloat(valueFromInput).toFixed(2));
                 if(input === 0) {
                     const nullReg = /^([0]?[.]?$)|^([0]?[.][0]?$)/;
@@ -69,12 +69,11 @@ export const AccountsExchangerBlock = (
                 });
             }
         } else {
-            currencyState.isFrom
-                ? setFromInputState({
-                    valueToShow: fromInputState.valueToShow, value: fromInputState.value, error: ''
-                })
-                : setToInputState({
-                valueToShow: toInputState.valueToShow, value: toInputState.value, error: ''
+            setFromInputState({
+                    valueToShow: '', value: 0, error: ''
+                });
+            setToInputState({
+                valueToShow: '', value: 0, error: ''
             });
         }
     };
