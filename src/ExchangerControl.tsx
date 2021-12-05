@@ -24,26 +24,25 @@ function ExchangerControl() {
 
     const [accounts,] = useState<AccountProps[]>(ACCOUNTS_INIT_VALUE) ;
     const [sellDirection, setSellDirection] = useState(true);
-
-    const sellText =(sellDirection ? 'Sell ': 'Buy');
+    const [rates, setRates] = useState<RatesProps|null>(null);
+    const [error, setError] = useState('');
+    const [notification, setNotification] = useState<NotificationProps>({className: 'NotificationSuccess', message: ''});
 
     const [currencyFromState, setCurrencyFromState ] = useState<CurrencyProps>({isFrom: true, currency: CURRENCIES.USD, rate: 0, balance: 0});
     const [currencyToState, setCurrencyToState ] = useState<CurrencyProps>({isFrom: false, currency: CURRENCIES.EUR, rate: 0, balance: 0});
 
     const onCurrencyAccountChange = (value: string, isFrom: boolean, rates: RatesProps|null) => {
          const currency = value as keyof typeof CURRENCIES;
-         if(rates) {
-             const currentAccount = accounts.filter((account) => account.currency === currency);
-            if(isFrom) {
-                setCurrencyFromState({currency: CURRENCIES[currency], isFrom: currencyFromState.isFrom, rate: rates[currency], balance:  currentAccount[0].balance} );
-            } else {
-                setCurrencyToState({currency: CURRENCIES[currency], isFrom: currencyToState.isFrom, rate: rates[currency], balance: currentAccount[0].balance} );
+         const currentAccount = accounts.filter((account) => account.currency === currency);
+         if(isFrom) {
+             setCurrencyFromState({currency: CURRENCIES[currency], isFrom: currencyFromState.isFrom, rate: rates ? rates[currency] : 0, balance:  currentAccount[0].balance} );
+         } else {
+                setCurrencyToState({currency: CURRENCIES[currency], isFrom: currencyToState.isFrom, rate: rates ? rates[currency] : 0, balance: currentAccount[0].balance} );
             }
-        }
+
     };
-    const [rates, setRates] = useState<RatesProps|null>(null);
-    const [error, setError] = useState('');
-    const [notification, setNotification] = useState<NotificationProps>({className: 'NotificationSuccess', message: ''});
+
+    const onCurrencyChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
 
     const loadRatesCallback = (result: RatesResponceProps) => {
         setError('');
@@ -74,16 +73,14 @@ function ExchangerControl() {
         delayInterval: DELAY_POLLING,
     });
 
-    const onCurrencyChange = ((value: string, isFrom: boolean ) => onCurrencyAccountChange(value, isFrom, rates));
-
-    const onSubmit = (fromMoneyInput: string,  toMoneyInput: string) => {
-        const newFromBalance = (sellDirection ? currencyFromState.balance-Number(fromMoneyInput) : currencyFromState.balance+Number(fromMoneyInput));
+    const onSubmit = (fromMoneyInput: number,  toMoneyInput: number) => {
+        const newFromBalance = (sellDirection ? currencyFromState.balance-fromMoneyInput : currencyFromState.balance+fromMoneyInput);
         setCurrencyFromState({currency: CURRENCIES[currencyFromState.currency], isFrom: currencyFromState.isFrom, rate: currencyFromState.rate, balance: newFromBalance});
 
         setTimeout(() => {
             setNotification({className: 'NotificationSuccess', message: ''});
         }, DELAY_SUCCESS);
-        setNotification({className: 'NotificationSuccess', message: `${sellDirection ? fromMoneyInput : toMoneyInput} ${sellDirection ? currencyFromState.currency : currencyToState.currency} was succesfully exchanged`})
+        setNotification({className: 'NotificationSuccess', message: `${sellDirection ? fromMoneyInput.toFixed(2) : toMoneyInput.toFixed(2)} ${sellDirection ? currencyFromState.currency : currencyToState.currency} was succesfully exchanged`})
 
         const selectedAccount = accounts.find(item => item.currency === currencyFromState.currency);
         if (selectedAccount) {
@@ -105,7 +102,7 @@ function ExchangerControl() {
         <div className={'ExchangerControl'}>
             <div className={'Exchange'}>
                 <div className={'ExchangeBody'}>
-                    <h3>{`${sellText} ${currencyFromState.currency}`}</h3>
+                    <h3>{`${(sellDirection ? 'Sell ': 'Buy')} ${currencyFromState.currency}`}</h3>
                     <div className={'ExchangeRatesPanel'}>
                         <img
                             src={Icons.money}
