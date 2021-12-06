@@ -15,5 +15,5 @@ export const ACCOUNTS_INIT_VALUE = [
 export const TEXT_COLOR='#282c34';
 export const TEXT_ERROR_COLOR='#d62424';
 
-export const LESS_BALANCE_MSG = 'The value should be less the balance';
+export const LESS_BALANCE_MSG = 'The value should be less than balance';
 export const NUMBER_MSG = 'Enter number with two decimals';
